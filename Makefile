@@ -4,8 +4,11 @@
 
 # Compiler settings - Can be customized.
 CC = g++
+SDL_CFLAGS := $(shell sdl2-config --cflags)
+SDL_LDFLAGS := $(shell sdl2-config --libs)
 CXXFLAGS = -std=c++11 -Wall -g
-LDFLAGS = -lSDL2 -lGL
+CFLAGS := $(SDL_CFLAGS) -O3
+LDFLAGS = -lSDL2
 
 # Makefile settings - Can be customized.
 APPNAME = myapp
