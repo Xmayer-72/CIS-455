@@ -8,7 +8,7 @@ CXXFLAGS = -std=c++11 -Wall -g
 LDFLAGS = -lSDL2 -lGL -lGLEW
 
 # Makefile settings - Can be customized.
-APPNAME = SDLtest
+APPNAME = myapp
 EXT = .cpp
 SRCDIR = src
 OBJDIR = obj
