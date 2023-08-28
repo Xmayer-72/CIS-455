@@ -8,6 +8,11 @@
             "cwd": "/home/conrad/Documents/CIS-455",
             "binaryPath": "/home/conrad/Documents/CIS-455/myapp",
             "binaryArgs": []
+        },
+        {
+            "cwd": "/home/conrad/Documents/CIS-455",
+            "binaryPath": "/home/conrad/Documents/CIS-455/Rasterizer",
+            "binaryArgs": []
         }
     ]
 }

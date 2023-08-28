@@ -8,10 +8,10 @@ SDL_CFLAGS := $(shell sdl2-config --cflags)
 SDL_LDFLAGS := $(shell sdl2-config --libs)
 CXXFLAGS = -std=c++11 -Wall -g
 CFLAGS := $(SDL_CFLAGS) -O3
-LDFLAGS = -lSDL2
+LDFLAGS = $(SDL_LDFLAGS)
 
 # Makefile settings - Can be customized.
-APPNAME = myapp
+APPNAME = Rasterizer
 EXT = .cpp
 SRCDIR = src
 OBJDIR = obj
