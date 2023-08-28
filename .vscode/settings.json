@@ -1,3 +1,13 @@
 {
-    "cmake.sourceDirectory": "/home/conrad/Documents/CIS-455"
+    "cmake.sourceDirectory": "/home/conrad/Documents/CIS-455",
+    "makefile.configurations": [
+        
+    ],
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/conrad/Documents/CIS-455",
+            "binaryPath": "/home/conrad/Documents/CIS-455/myapp",
+            "binaryArgs": []
+        }
+    ]
 }
