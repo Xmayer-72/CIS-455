@@ -1,16 +1,17 @@
-#include <iostream>
-#include <SDL2/SDL.h>
-#include <stdexcept>
+#include "CanvasBase.h"
+#include "Misc.h"
 
 int main(){
-    std::cout << "Hello World" << std::endl;
+    CanvasBase Canvas("", 300, 300);
+while (should_keep_rendering)
+{
+    Canvas.clear();
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0){
-        throw std::runtime_error(
-            std::string("Could not INIT SDL2: ")
-            + SDL_GetError()
-        );
-    }
-    SDL_Quit();
+    Canvas.put_pixel({0,0},Color::red);
+
+    Canvas.present();
+}
+
+    
     return 0;
 }
