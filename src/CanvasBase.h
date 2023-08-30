@@ -56,7 +56,7 @@ public:
     {
         SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, 255);
         SDL_RenderDrawPoint(_renderer, 
-            (static_cast<int>(_width)/2) + pt.X,
+            (static_cast<int>(_width)/2) + pt.x,
             (static_cast<int>(_height)/2) - pt.y);
     }
 

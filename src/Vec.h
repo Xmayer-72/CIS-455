@@ -5,7 +5,7 @@ template<typename T>
 class Vec2
 {
 public:
-    T X;
+    T x;
     T y;
 };
 
