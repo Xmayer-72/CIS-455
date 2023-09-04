@@ -7,8 +7,8 @@ int main(){
     {
         Canvas.clear();
         
-        Canvas.draw_triangle_outline({300,200},{0,200},{-300,-250}, Color::blue_violet);
-        Canvas.draw_triangle_2d({299,199},{1,199},{-299,-249}, Color::blue);
+        //Canvas.draw_triangle_2d_outline({300,200},{0,150},{-300,-250}, Color::blue_violet);
+        Canvas.draw_triangle_2d({0, 0}, {-100,180}, {300,-250}, Color::blue);
 
         Canvas.present();
     }
