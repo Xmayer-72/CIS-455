@@ -37,6 +37,15 @@ public:
         }
     }
 
+    void draw_triangle_outline(Vec2i pt1, Vec2i pt2, Vec2i pt3, Color color){
+        draw_line_2d(pt1,pt2,color);
+        draw_line_2d(pt3,pt2,color);
+        draw_line_2d(pt3,pt1,color);
+    }
+
+    void draw_triangle_2d(Vec2i pt1, Vec2i pt2, Vec2i pt3, Color color){
+        
+    }
 private:
     static std::vector<float> interpolate(int i0, float d0, int i1, float d1){
         if (i0 == i1)

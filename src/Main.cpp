@@ -6,12 +6,9 @@ int main(){
     while (should_keep_rendering())
     {
         Canvas.clear();
-
-        Canvas.draw_line_2d({-120, -240}, {120, 240}, Color::aquamarine);
-
-        Canvas.draw_line_2d({240, 120},{-200,-10}, Color::red_violet);
-
-        Canvas.draw_line_2d({-50,-200},{60,240}, Color::gold);
+        
+        Canvas.draw_triangle_outline({300,200},{0,200},{-300,-250}, Color::blue_violet);
+        Canvas.draw_triangle_2d({299,199},{1,199},{-299,-249}, Color::blue);
 
         Canvas.present();
     }
