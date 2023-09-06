@@ -113,12 +113,14 @@ private:
         auto x12 = interpolate(y1, v1, y2, v2);
         auto x02 = interpolate(y0, v0, y2, v2);
 
-        auto x012 = x01;
-        x012.pop_back();
-        x012.insert(x012.end(), x12.begin(), x12.end());
+        x01.pop_back();
+        x01.insert(x01.end(), x12.begin(), x12.end());
+        // auto x012 = x01;
+        // x012.pop_back();
+        // x012.insert(x012.end(), x12.begin(), x12.end());
 
         auto m = x02.size() / 2;
-        auto left = x012;//
+        auto left = x01;//
         auto right = x02;
 
         if (left[m] > right[m])
