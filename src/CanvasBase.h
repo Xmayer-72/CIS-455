@@ -52,7 +52,7 @@ public:
         SDL_DestroyWindow(_window);
     }
 
-    void put_pixel( const Vec2i& pt,const Color& color) const
+    void put_pixel( const vec2i& pt,const Color& color) const
     {
         SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, 255);
         SDL_RenderDrawPoint(_renderer, 

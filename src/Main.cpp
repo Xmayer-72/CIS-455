@@ -3,26 +3,34 @@
 
 int main(){
     Canvas Canvas("", 650, 650);
+
+    vec3f cube_ftl = {-2, -0.5, 5};
+    vec3f cube_ftr = {-2, 0.5, 5};
+    vec3f cube_fbl = {-1, -0.5, 5};
+    vec3f cube_fbr = {-1, 0.5, 5};
+    vec3f cube_btl = {-2, -0.5, 6};
+    vec3f cube_btr = {-2, 0.5, 6};
+    vec3f cube_bbl = {-1, -0.5, 6};
+    vec3f cube_bbr = {-1, 0.5, 6};
+
     while (should_keep_rendering())
     {
         Canvas.clear();
         
-        //Canvas.draw_triangle_2d_outline({300,200},{0,150},{-300,-250}, Color::blue_violet);
-        //Canvas.draw_triangle_2d({0, 0}, {-100,180}, {300,-250}, Color::blue);
-        //roof
-        Canvas.draw_triangle_2d({0,200},{-200,100},{200,100},Color::red);
-        //wall
-        Canvas.draw_triangle_2d({-150,100},{150,100},{150,-175},Color::green);
-        Canvas.draw_triangle_2d({-150,100},{-150,-175},{150,-175},Color::green);
-        //window 1
-        Canvas.draw_triangle_2d({-125,75},{-25,75},{-25,0},Color::blue);
-        Canvas.draw_triangle_2d({-125,75},{-125,0},{-25,0},Color::blue);
-        //window 2
-        Canvas.draw_triangle_2d({125,75},{15,75},{15,0},Color::blue);
-        Canvas.draw_triangle_2d({125,75},{125,0},{15,0},Color::blue);
-        //door
-        Canvas.draw_triangle_2d({-40,-15},{40,-15},{40,-175}, Color::dark_violet);
-        Canvas.draw_triangle_2d({-40,-15},{-40,-175},{40,-175}, Color::dark_violet);
+        Canvas.draw_line_3d(cube_ftl, cube_ftr, Color::blue);
+        Canvas.draw_line_3d(cube_ftl, cube_fbl, Color::blue);
+        Canvas.draw_line_3d(cube_fbr, cube_ftr, Color::blue);
+        Canvas.draw_line_3d(cube_fbr, cube_fbl, Color::blue);
+        
+        Canvas.draw_line_3d(cube_btl, cube_btr, Color::red);
+        Canvas.draw_line_3d(cube_btl, cube_bbl, Color::red);
+        Canvas.draw_line_3d(cube_bbr, cube_btr, Color::red);
+        Canvas.draw_line_3d(cube_bbr, cube_bbl, Color::red);
+        
+        Canvas.draw_line_3d(cube_ftl, cube_btl, Color::lime);
+        Canvas.draw_line_3d(cube_ftr, cube_btr, Color::lime);
+        Canvas.draw_line_3d(cube_fbl, cube_bbl, Color::lime);
+        Canvas.draw_line_3d(cube_fbr, cube_bbr, Color::lime);
 
         Canvas.present();
     }

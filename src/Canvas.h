@@ -5,17 +5,20 @@
 
 class Canvas final : public CanvasBase
 {
-    struct CorrespondingCoordinateLists{
+    struct correspondingCoordinateLists{
         std::vector<float> left;
         std::vector<float> right;
     };
+
+    static constexpr float viewport_size = 1;
+    static constexpr float projection_z = 1;
 
 public:
     Canvas (const char* window_title, size_t width, size_t height) 
         : CanvasBase(window_title, height, width){
     }
     
-    void draw_line_2d(Vec2i pt1, Vec2i pt2, const Color& color) const {
+    void draw_line_2d(vec2i pt1, vec2i pt2, const Color& color) const {
         auto dx = pt2.x - pt1.x;
         auto dy = pt2.y - pt1.y;
 
@@ -42,13 +45,13 @@ public:
         }
     }
 
-    void draw_triangle_2d_outline(Vec2i pt1, Vec2i pt2, Vec2i pt3, const Color& color) const {
+    void draw_triangle_2d_outline(vec2i pt1, vec2i pt2, vec2i pt3, const Color& color) const {
         draw_line_2d(pt1,pt2,color);
         draw_line_2d(pt3,pt2,color);
         draw_line_2d(pt3,pt1,color);
     }
 
-    void draw_triangle_2d(Vec2i pt1, Vec2i pt2, Vec2i pt3, const Color& color) const {
+    void draw_triangle_2d(vec2i pt1, vec2i pt2, vec2i pt3, const Color& color) const {
         //Sort points by height
         if (pt2.y < pt1.y)
         {
@@ -86,6 +89,12 @@ public:
         }
     }
 
+    void draw_line_3d(const vec3f pt1, const vec3f pt2, const Color& color){
+        auto pv1 = project_vortex(pt1);
+        auto pv2 = project_vortex(pt2);
+        draw_line_2d(pv1, pv2, color);
+    }
+
 private:
     static std::vector<float> interpolate(int i0, float d0, int i1, float d1){
         if (i0 == i1)
@@ -108,19 +117,19 @@ private:
         }
     }
 
-    static CorrespondingCoordinateLists interpolate_between_edges(int y0, float v0, int y1, float v1, int y2, float v2){
+    static correspondingCoordinateLists interpolate_between_edges(int y0, float v0, int y1, float v1, int y2, float v2){
         auto x01 = interpolate(y0, v0, y1, v1);
         auto x12 = interpolate(y1, v1, y2, v2);
         auto x02 = interpolate(y0, v0, y2, v2);
 
-        x01.pop_back();
-        x01.insert(x01.end(), x12.begin(), x12.end());
-        // auto x012 = x01;
-        // x012.pop_back();
-        // x012.insert(x012.end(), x12.begin(), x12.end());
+        // x01.pop_back();
+        // x01.insert(x01.end(), x12.begin(), x12.end());
+        auto x012 = x01;
+        x012.pop_back();
+        x012.insert(x012.end(), x12.begin(), x12.end());
 
         auto m = x02.size() / 2;
-        auto left = x01;//
+        auto left = x012;//
         auto right = x02;
 
         if (left[m] > right[m])
@@ -129,5 +138,17 @@ private:
         }
 
         return {left, right};
+    }
+
+    vec2i viewport_to_canvas(const vec2f& pt) const{
+        return {
+            static_cast<int>((pt.x * static_cast<float>(_width)) / viewport_size),
+            static_cast<int>((pt.y * static_cast<float>(_height)) / viewport_size)};
+    }
+    
+    vec2i project_vortex(const vec3f& v) const{
+        return viewport_to_canvas({
+            (v.x * projection_z) / v.z,
+            (v.y * projection_z) / v.z});
     }
 };
