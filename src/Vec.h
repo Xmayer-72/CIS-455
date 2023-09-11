@@ -21,7 +21,7 @@ public:
     T y;
     T z;
 
-    friend Vec3<t> operator+( const Vec3<T>& a, const Vec3<t> b){
+    friend Vec3<T> operator+( const Vec3<T>& a, const Vec3<T>& b){
         return {a.x + b.x, a.y + b.y, a.z + b.z};
     }
 };
