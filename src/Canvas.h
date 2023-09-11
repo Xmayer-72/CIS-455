@@ -1,7 +1,10 @@
 #pragma once
 
 #include "CanvasBase.h"
+#include "Model.h"
 #include <vector>
+
+#include <iostream>
 
 class Canvas final : public CanvasBase
 {
@@ -95,7 +98,40 @@ public:
         draw_line_2d(pv1, pv2, color);
     }
 
+    void draw_simple_model_naive(const Model& model) const{
+        for(auto& triangle : model.triangles){
+            draw_triangle_3d(
+                model.verticies[triangle.vertex_indexes.x],
+                model.verticies[triangle.vertex_indexes.y],
+                model.verticies[triangle.vertex_indexes.z],
+                triangle.color
+            );
+        }
+    }
+
+    void draw_simple_model_naive_2(const Model& model, const vec3f& translation = {0,0,0}) const{
+        for(auto& triangle : model.triangles){
+            draw_triangle_3d(
+                model.verticies[triangle.vertex_indexes.x] + translation,
+                model.verticies[triangle.vertex_indexes.y] + translation,
+                model.verticies[triangle.vertex_indexes.z] + translation,
+                //triangle.color
+                Color::red
+            );
+        }
+    }
+
 private:
+    void draw_triangle_3d(const vec3f& v1, const vec3f& v2, const vec3f& v3, Color color) const{
+        auto pv1 = project_vortex(v1);
+        auto pv2 = project_vortex(v2);
+        auto pv3 = project_vortex(v3);
+
+        draw_line_2d(pv1, pv2, color);
+        draw_line_2d(pv2, pv3, color);
+        draw_line_2d(pv1, pv3, color);
+    }
+
     static std::vector<float> interpolate(int i0, float d0, int i1, float d1){
         if (i0 == i1)
         {

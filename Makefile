@@ -6,7 +6,7 @@
 CC = g++
 SDL_CFLAGS := $(shell sdl2-config --cflags)
 SDL_LDFLAGS := $(shell sdl2-config --libs)
-CXXFLAGS = -std=c++11 -Wall -g
+CXXFLAGS = -std=c++17 -Wall -g
 CFLAGS := $(SDL_CFLAGS) -O3
 LDFLAGS = $(SDL_LDFLAGS)
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <string>
+#include <strings.h>
 #include <vector>
 #include <fstream>
 
@@ -15,8 +15,8 @@ class A3DBModel
 public:
     static std::unique_ptr<Model> load( const std::string& file_name )
     {
-        std::vector<Vec3f> vertices        ;
-        std::vector<Vec3i> indices         ;
+        std::vector<vec3f> vertices        ;
+        std::vector<vec3i> indices         ;
         std::vector<Color> triangle_colors ;
 
         std::ifstream in_file( file_name ) ;
@@ -32,7 +32,7 @@ public:
             if( ! in_file.eof() && ! in_file.good() )
                 return nullptr ;
 
-            if( ! _stricmp( object.c_str(), "vertex" ) )
+            if( ! strcmp( object.c_str(), "vertex" ) )
             {
                 float x, y, z ;
                 in_file >> x >> y >> z ;
@@ -43,7 +43,7 @@ public:
                 vertices.push_back( { x, y, z } ) ;
             }
 
-            if( ! _stricmp( object.c_str(), "triangle" ) )
+            if( ! strcmp( object.c_str(), "triangle" ) )
             {
                 int x, y, z, r, g, b ;
                 in_file >> x >> y >> z >> r >> g >> b ;
