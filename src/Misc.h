@@ -9,3 +9,5 @@ inline bool should_keep_rendering()
     SDL_PollEvent( &event);
     return event.type != SDL_QUIT;
 }
+
+constexpr float pi = 3.14159265359;

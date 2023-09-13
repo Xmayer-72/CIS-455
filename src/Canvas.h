@@ -2,8 +2,9 @@
 
 #include "CanvasBase.h"
 #include "Model.h"
-#include <vector>
+#include "Mat.h"
 
+#include <vector>
 #include <iostream>
 
 class Canvas final : public CanvasBase
@@ -20,7 +21,29 @@ public:
     Canvas (const char* window_title, size_t width, size_t height) 
         : CanvasBase(window_title, height, width){
     }
-    
+
+    void draw_simple_model(const Model& model,
+                           const Mat& transformation = Mat::get_identity_matrix()) const{
+
+        for(auto& triangle : model.triangles){
+            std::vector<vec2i> projected_vertexies(model.verticies.size());
+
+            for(int i; i < model.verticies.size(); ++i){
+                projected_vertexies[i] = project_vortex(transformation * model.verticies[i]);
+            }
+
+            for (auto& triangle : model.triangles){
+                draw_triangle_2d_outline(
+                    projected_vertexies[triangle.vertex_indexes.x],
+                    projected_vertexies[triangle.vertex_indexes.y],
+                    projected_vertexies[triangle.vertex_indexes.z],
+                    triangle.color
+                );
+            }
+        }
+    }
+
+private:
     void draw_line_2d(vec2i pt1, vec2i pt2, const Color& color) const {
         auto dx = pt2.x - pt1.x;
         auto dy = pt2.y - pt1.y;
@@ -97,30 +120,7 @@ public:
         auto pv2 = project_vortex(pt2);
         draw_line_2d(pv1, pv2, color);
     }
-
-    void draw_simple_model_naive(const Model& model) const{
-        for(auto& triangle : model.triangles){
-            draw_triangle_3d(
-                model.verticies[triangle.vertex_indexes.x],
-                model.verticies[triangle.vertex_indexes.y],
-                model.verticies[triangle.vertex_indexes.z],
-                triangle.color
-            );
-        }
-    }
-
-    void draw_simple_model_naive_2(const Model& model, const vec3f& translation = {0,0,0}) const{
-        for(auto& triangle : model.triangles){
-            draw_triangle_3d(
-                model.verticies[triangle.vertex_indexes.x] + translation,
-                model.verticies[triangle.vertex_indexes.y] + translation,
-                model.verticies[triangle.vertex_indexes.z] + translation,
-                triangle.color
-            );
-        }
-    }
-
-private:
+    
     void draw_triangle_3d(const vec3f& v1, const vec3f& v2, const vec3f& v3, Color color) const{
         auto pv1 = project_vortex(v1);
         auto pv2 = project_vortex(v2);
@@ -182,6 +182,12 @@ private:
     }
     
     vec2i project_vortex(const vec3f& v) const{
+        return viewport_to_canvas({
+            (v.x * projection_z) / v.z,
+            (v.y * projection_z) / v.z});
+    }
+    
+    vec2i project_vortex(const vec4f& v) const{
         return viewport_to_canvas({
             (v.x * projection_z) / v.z,
             (v.y * projection_z) / v.z});

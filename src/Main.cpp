@@ -18,9 +18,7 @@ int main(){
     {
         Canvas.clear();
         
-        Canvas.draw_simple_model_naive_2(*cube, {-1.5, 0, 7});
-
-        //Canvas.draw_line_2d({50,100},{-50,-100}, Color::red);
+        Canvas.draw_simple_model(*cube, {-1.5, 0, 7});
 
         Canvas.present();
     }
