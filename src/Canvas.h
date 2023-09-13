@@ -115,8 +115,7 @@ public:
                 model.verticies[triangle.vertex_indexes.x] + translation,
                 model.verticies[triangle.vertex_indexes.y] + translation,
                 model.verticies[triangle.vertex_indexes.z] + translation,
-                //triangle.color
-                Color::red
+                triangle.color
             );
         }
     }

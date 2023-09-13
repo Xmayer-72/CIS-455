@@ -9,5 +9,5 @@ private:
 
 public:
     vec3i vertex_indexes;
-    Color& color;
+    Color color;
 };
