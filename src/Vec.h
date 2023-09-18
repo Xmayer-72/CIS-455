@@ -28,6 +28,10 @@ public:
     friend vec3<T> operator*( const vec3<T>& a, const vec3<T>& b){
         return {a.x * b.x, a.y * b.y, a.z * b.z};
     }
+
+    friend vec3<T> operator-( const vec3<T>& a){
+        return{-a.x, -a.y, -a.z};
+    }
 };
 
 using vec3f = vec3<float>;

@@ -11,3 +11,5 @@ inline bool should_keep_rendering()
 }
 
 constexpr float pi = 3.14159265359;
+
+constexpr float square_root_of_two = 1.41421356237;

@@ -15,9 +15,9 @@ class A3DBModel
 public:
     static std::unique_ptr<Model> load( const std::string& file_name )
     {
-        std::vector<vec3f> vertices        ;
-        std::vector<vec3i> indices         ;
-        std::vector<Color> triangle_colors ;
+        std::vec3f<vec3f> vertices        ;
+        std::vec3f<vec3i> indices         ;
+        std::vec3f<Color> triangle_colors ;
 
         std::ifstream in_file( file_name ) ;
 
@@ -61,7 +61,7 @@ public:
             }
         }
 
-        std::vector<Triangle> triangles ;
+        std::vec3f<Triangle> triangles ;
         for( size_t i = 0 ; i < indices.size() ; ++i )
             triangles.push_back( { indices[ i ], triangle_colors[ i ] } ) ;
 
