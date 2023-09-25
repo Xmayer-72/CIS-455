@@ -39,24 +39,24 @@ public:
     }
 
     void draw_simple_model(const ModelInstance& instance) const{
-        auto overall_transform = _camera_transform * instance.get_transformation();
+        auto overall_transform = _camera_transform * instance.get_transformation() ;
 
-        std::vector<vec2i> projected_vertexies(instance.model.verticies.size());
-        
-        for(auto& triangle : instance.model.triangles){
+        auto clipped_model = clip_model( instance, overall_transform ) ;
 
-            for(int i; i < instance.model.verticies.size(); ++i){
-                projected_vertexies[i] = project_vortex(overall_transform * instance.model.verticies[i]);
-            }
+        if( clipped_model == nullptr )
+            return ;
 
-            for (auto& triangle : instance.model.triangles){
-                draw_triangle_2d_outline(
-                    projected_vertexies[triangle.vertex_indexes.x],
-                    projected_vertexies[triangle.vertex_indexes.y],
-                    projected_vertexies[triangle.vertex_indexes.z],
-                    triangle.color
-                );
-            }
+        std::vector<vec2i> projected_verticies( clipped_model->verticies.size() ) ;
+        for( size_t i = 0 ; i < clipped_model->verticies.size() ; ++i )
+            projected_verticies[ i ] = project_vertex( clipped_model->verticies[ i ] ) ;
+
+        for( auto& triangle : clipped_model->triangles )
+        {
+            draw_triangle_2d_outline(
+                projected_verticies[ triangle.vertex_indexes.x ],
+                projected_verticies[ triangle.vertex_indexes.y ],
+                projected_verticies[ triangle.vertex_indexes.z ],
+                triangle.color ) ;
         }
     }
 
@@ -80,53 +80,70 @@ private:
         //----------------------------------------------------------------------------------------
 
         // Get the transformed center and radius of the model's bounding sphere
-        // TODO: that ^
+        auto transformed_center = transform * instance.model.bounding_sphere.center;
+        auto transformed_radius = instance.get_scale() * instance.model.bounding_sphere.radius;
 
         // Discard instance if it is entirely outside of the viewing frustrum
-        // TODO: that ^
+        for (auto& clipping_plane : clipping_planes)
+        {
+            auto distance = compute_dot_product(clipping_plane.normal, transformed_center)
+                + clipping_plane.distance;
 
+            if (distance < -transformed_radius)
+            {
+                return nullptr;
+            }
+        }
 
         //----------------------------------------------------------------------------------------
         // Phase 2: Clip individual triangls in the model
         //----------------------------------------------------------------------------------------
 
-        // Transform vertices
-        // TODO: that ^
+        // Transform verticies
+        std::vector<vec3f> verticies(instance.model.verticies.size());
 
-        // Clip each of the triangles (with transformed vertices) against each successive plane
+        for (size_t i = 0; i < instance.model.verticies.size(); ++i)
+        {
+            auto tv = transform * instance.model.verticies[i];
+            verticies[i] = {tv.x, tv.y, tv.z};
+        }        
+
+        // Clip each of the triangles (with transformed verticies) against each successive plane
 
         // Step 1.) Copy model triangles to vectors we will call "unclipped"
-        // TODO: that ^
+        std::vector<Triangle> unclipped_triangles{instance.model.triangles};
 
         // Step 2.) Go through each of the clipping planes
-        // TODO: that ^
+        for(auto& clipping_plane : clipping_planes){
             // Step 3.) Create empty vectors to hold the triangles after they are clipped
-            // TODO: that ^
+            std::vector<Triangle> clipped_trianges;
 
             // Step 4.) Go through each of the triangles (for the current clipping plane)
-            // TODO: that ^
+            for(auto& unclipped_triangle : unclipped_triangles){
                 // Step 5.) Add the clipped triangles to the clipped triangle vectors
-                // TODO: that ^
+                clip_triangle(clipping_plane, unclipped_triangle, verticies, clipped_trianges);
+            }
 
             // Step 6.) The vectors now have triangles clipped relative to the current clipping plane.
             //          Copy them to the unclipped vectors because they have not yet been clipped relative
             //            to the next clipping plane.
-            // TODO: that ^
+            unclipped_triangles = std::vector<Triangle>{clipped_trianges};
+        }
 
         // Step 7.) There was not a next clipping plane, so the triangles that are in the "unclipped" vectors
         //            are actually fully clipped.  So, pass back a new model made up of the clipped triangles.
-        // TODO: that ^
+        return std::make_unique<Model>(Model{verticies, unclipped_triangles});
     }
 
     void clip_triangle( const Plane& plane, const Triangle& triangle,
-        std::vector<vec3f>& vertices, std::vector<Triangle>& triangles ) const
+        std::vector<vec3f>& verticies, std::vector<Triangle>& triangles ) const
     {
         auto dist_from_plane_v1 = compute_dot_product( plane.normal,
-                                    vertices[ triangle.vertex_indexes.x ] ) + plane.distance ;
+                                    verticies[ triangle.vertex_indexes.x ] ) + plane.distance ;
         auto dist_from_plane_v2 = compute_dot_product( plane.normal,
-                                    vertices[ triangle.vertex_indexes.y ] ) + plane.distance ;
+                                    verticies[ triangle.vertex_indexes.y ] ) + plane.distance ;
         auto dist_from_plane_v3 = compute_dot_product( plane.normal,
-                                    vertices[ triangle.vertex_indexes.z ] ) + plane.distance ;
+                                    verticies[ triangle.vertex_indexes.z ] ) + plane.distance ;
 
         auto count_in_plane = ( dist_from_plane_v1 > 0 ? 1 : 0 )
             + ( dist_from_plane_v2 > 0 ? 1 : 0 )
@@ -141,75 +158,75 @@ private:
         {   // The triangle has one vertex in. Add one clipped triangle.
 
             // Set A to the vertex inside the frustrum and idx_a to it's index
-            // Set B and C to the other two vertices
-            auto a = vertices[ triangle.vertex_indexes.x ] ;
-            auto b = vertices[ triangle.vertex_indexes.y ] ;
-            auto c = vertices[ triangle.vertex_indexes.z ] ;
+            // Set B and C to the other two verticies
+            auto a = verticies[ triangle.vertex_indexes.x ] ;
+            auto b = verticies[ triangle.vertex_indexes.y ] ;
+            auto c = verticies[ triangle.vertex_indexes.z ] ;
             auto idx_a = triangle.vertex_indexes.x ;
             if( dist_from_plane_v2 > 0 )
             {
-                a = vertices[ triangle.vertex_indexes.y ] ;
-                b = vertices[ triangle.vertex_indexes.z ] ;
-                c = vertices[ triangle.vertex_indexes.x ] ;
+                a = verticies[ triangle.vertex_indexes.y ] ;
+                b = verticies[ triangle.vertex_indexes.z ] ;
+                c = verticies[ triangle.vertex_indexes.x ] ;
                 idx_a = triangle.vertex_indexes.y ;
             }
             else if( dist_from_plane_v3 > 0 )
             {
-                a = vertices[ triangle.vertex_indexes.z ] ;
-                b = vertices[ triangle.vertex_indexes.x ] ;
-                c = vertices[ triangle.vertex_indexes.y ] ;
+                a = verticies[ triangle.vertex_indexes.z ] ;
+                b = verticies[ triangle.vertex_indexes.x ] ;
+                c = verticies[ triangle.vertex_indexes.y ] ;
                 idx_a = triangle.vertex_indexes.z ;
             }
 
-            // Create new vertices where AB and AC intersect the clipping plane
+            // Create new verticies where AB and AC intersect the clipping plane
             auto new_b = compute_intersection( a, b, plane ) ;
             auto new_c = compute_intersection( a, c, plane ) ;
 
-            // Add the new vertices to the vertices list and get their indexes
-            vertices.push_back( new_b ) ;
-            vertices.push_back( new_c ) ;
-            auto idx_b = static_cast<int>( vertices.size() ) - 2 ;
-            auto idx_c = static_cast<int>( vertices.size() ) - 1 ;
+            // Add the new verticies to the verticies list and get their indexes
+            verticies.push_back( new_b ) ;
+            verticies.push_back( new_c ) ;
+            auto idx_b = static_cast<int>( verticies.size() ) - 2 ;
+            auto idx_c = static_cast<int>( verticies.size() ) - 1 ;
 
             // Add the new triangle made up of A, the new B, and the new C (and its color)
             triangles.push_back( { { idx_a, idx_b, idx_c }, triangle.color } ) ;
         }
         else if( count_in_plane == 2 )
-        {   // The triangle has two vertices in. Add two clipped triangles.
+        {   // The triangle has two verticies in. Add two clipped triangles.
 
             // Set C to the vertex outside the frustrum
-            // Set A and B to the other two vertices and idx_a and idx_b to their indices
-            auto a = vertices[ triangle.vertex_indexes.x ] ;
-            auto b = vertices[ triangle.vertex_indexes.y ] ;
-            auto c = vertices[ triangle.vertex_indexes.z ] ;
+            // Set A and B to the other two verticies and idx_a and idx_b to their indices
+            auto a = verticies[ triangle.vertex_indexes.x ] ;
+            auto b = verticies[ triangle.vertex_indexes.y ] ;
+            auto c = verticies[ triangle.vertex_indexes.z ] ;
             auto idx_a = triangle.vertex_indexes.x ;
             auto idx_b = triangle.vertex_indexes.y ;
             if( dist_from_plane_v1 <= 0 )
             {
-                a = vertices[ triangle.vertex_indexes.y ] ;
-                b = vertices[ triangle.vertex_indexes.z ] ;
-                c = vertices[ triangle.vertex_indexes.x ] ;
+                a = verticies[ triangle.vertex_indexes.y ] ;
+                b = verticies[ triangle.vertex_indexes.z ] ;
+                c = verticies[ triangle.vertex_indexes.x ] ;
                 idx_a = triangle.vertex_indexes.y ;
                 idx_b = triangle.vertex_indexes.z ;
             }
             else if( dist_from_plane_v2 <= 0 )
             {
-                a = vertices[ triangle.vertex_indexes.z ] ;
-                b = vertices[ triangle.vertex_indexes.x ] ;
-                c = vertices[ triangle.vertex_indexes.y ] ;
+                a = verticies[ triangle.vertex_indexes.z ] ;
+                b = verticies[ triangle.vertex_indexes.x ] ;
+                c = verticies[ triangle.vertex_indexes.y ] ;
                 idx_a = triangle.vertex_indexes.z ;
                 idx_b = triangle.vertex_indexes.x ;
             }
 
-            // Create new vertices where AC and BC intersect the clipping plane
+            // Create new verticies where AC and BC intersect the clipping plane
             auto new_a = compute_intersection( a, c, plane ) ;
             auto new_b = compute_intersection( b, c, plane ) ;
 
-            // Add the new vertices to the vertices list and get their indexes
-            vertices.push_back( new_a ) ;
-            vertices.push_back( new_b ) ;
-            auto idx_new_a = static_cast<int>( vertices.size() ) - 2 ;
-            auto idx_new_b = static_cast<int>( vertices.size() ) - 1 ;
+            // Add the new verticies to the verticies list and get their indexes
+            verticies.push_back( new_a ) ;
+            verticies.push_back( new_b ) ;
+            auto idx_new_a = static_cast<int>( verticies.size() ) - 2 ;
+            auto idx_new_b = static_cast<int>( verticies.size() ) - 1 ;
 
             // Add the new triangle made up of A, B and the new A (and its color)
             triangles.push_back( { { idx_a, idx_b, idx_new_a }, triangle.color } ) ;
@@ -291,15 +308,15 @@ private:
     }
 
     void draw_line_3d(const vec3f pt1, const vec3f pt2, const Color& color){
-        auto pv1 = project_vortex(pt1);
-        auto pv2 = project_vortex(pt2);
+        auto pv1 = project_vertex(pt1);
+        auto pv2 = project_vertex(pt2);
         draw_line_2d(pv1, pv2, color);
     }
     
     void draw_triangle_3d(const vec3f& v1, const vec3f& v2, const vec3f& v3, Color color) const{
-        auto pv1 = project_vortex(v1);
-        auto pv2 = project_vortex(v2);
-        auto pv3 = project_vortex(v3);
+        auto pv1 = project_vertex(v1);
+        auto pv2 = project_vertex(v2);
+        auto pv3 = project_vertex(v3);
 
         draw_line_2d(pv1, pv2, color);
         draw_line_2d(pv2, pv3, color);
@@ -356,7 +373,7 @@ private:
             static_cast<int>((pt.y * static_cast<float>(_height)) / viewport_size)};
     }
     
-    vec2i project_vortex(const vec3f& v) const{
+    vec2i project_vertex(const vec3f& v) const{
         return viewport_to_canvas({
             (v.x * projection_z) / v.z,
             (v.y * projection_z) / v.z});

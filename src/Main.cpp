@@ -18,6 +18,8 @@ int main(){
 
     ModelInstance cube1{*cube, {-1.5, 0, 7}, 0.75};
 
+    ModelInstance cube3{*cube, {-1.5, 1, 0}};
+
     Canvas.set_camera_pos({-3, 1, 2});
     Canvas.set_camera_orient(Mat::get_rotation_matrix(30, {0, 1, 0}));
 
@@ -25,9 +27,9 @@ int main(){
     {
         Canvas.clear();
         
-        Canvas.draw_simple_model(cube2);
-
         Canvas.draw_simple_model(cube1);
+        
+        Canvas.draw_simple_model(cube2);
 
         Canvas.present();
     }

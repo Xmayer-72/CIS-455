@@ -18,6 +18,7 @@ class ModelInstance{
 
 public:
     const Model& model;
+    
     explicit ModelInstance(const Model& model,
                            const vec3f& translation     = {0, 0, 0},
                            float scale                  = 1,
