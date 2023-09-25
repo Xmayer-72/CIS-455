@@ -30,6 +30,21 @@ inline vec3f compute_intersection( const vec3f& v1, const vec3f& v2, const Plane
     return v1 + t * ( v2 - v1 ) ;
 }
 
+inline vec3f compute_cross_product( const vec3f& v0, const vec3f& v1 )
+{
+    return {
+        v0.y * v1.z - v0.z * v1.y,
+        -( v0.x * v1.z - v0.z * v1.x ),
+        v0.x * v1.y - v0.y * v1.x } ;
+}
+
+inline vec3f compute_triangle_normal( const vec3f& v0, const vec3f& v1, const vec3f& v2 )
+{
+    auto v0_v1 = v1 - v0 ;
+    auto v0_v2 = v2 + v0 ;
+    return compute_cross_product( v0_v1, v0_v2 ) ;
+}
+
 constexpr float pi = 3.14159265359;
 
 constexpr float square_root_of_two = 1.41421356237;

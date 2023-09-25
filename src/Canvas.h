@@ -60,6 +60,17 @@ public:
 
         for( auto& triangle : clipped_model->triangles )
         {
+            auto vertex = clipped_model->verticies[triangle.vertex_indexes.x];
+            auto normal = compute_triangle_normal(
+                clipped_model->verticies[triangle.vertex_indexes.x],
+                clipped_model->verticies[triangle.vertex_indexes.y],
+                clipped_model->verticies[triangle.vertex_indexes.z] );
+
+            if (compute_dot_product(vertex, normal) <= 0)
+            {
+                continue;
+            }
+            
             draw_triangle_2d(
                 projected_verticies[ triangle.vertex_indexes.x ],
                 projected_verticies[ triangle.vertex_indexes.y ],
