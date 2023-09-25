@@ -26,6 +26,14 @@ public:
         _camera_pos({0, 0, 0}),
         _camera_orient(Mat::get_identity_matrix()),
         _camera_transform(Mat::get_identity_matrix()){
+            _depth_buffer = std::vector<float>(_width * _height, 0.0f);
+    }
+
+    void clear() override
+    {
+        CanvasBase::clear();
+
+        _depth_buffer = std::vector<float>(_width * _height, 0.0f);
     }
 
     void set_camera_pos(const vec3f& position){
@@ -38,7 +46,7 @@ public:
         compute_camera_transform();
     }
 
-    void draw_simple_model(const ModelInstance& instance) const{
+    void draw_simple_model(const ModelInstance& instance) {
         auto overall_transform = _camera_transform * instance.get_transformation() ;
 
         auto clipped_model = clip_model( instance, overall_transform ) ;
@@ -52,20 +60,22 @@ public:
 
         for( auto& triangle : clipped_model->triangles )
         {
-            draw_triangle_2d_outline(
+            draw_triangle_2d(
                 projected_verticies[ triangle.vertex_indexes.x ],
                 projected_verticies[ triangle.vertex_indexes.y ],
                 projected_verticies[ triangle.vertex_indexes.z ],
+                clipped_model->verticies[triangle.vertex_indexes.x].z,
+                clipped_model->verticies[triangle.vertex_indexes.y].z,
+                clipped_model->verticies[triangle.vertex_indexes.z].z,
                 triangle.color ) ;
         }
     }
 
 private:
-    vec3f _camera_pos;
-    Mat _camera_orient;
-    Mat _camera_transform;
-
-
+    vec3f               _camera_pos         ;
+    Mat                 _camera_orient      ;
+    Mat                 _camera_transform   ;
+    std::vector<float>  _depth_buffer{}     ;
 
     void compose_camera_transform()
     {
@@ -269,21 +279,24 @@ private:
         draw_line_2d(pt3,pt1,color);
     }
 
-    void draw_triangle_2d(vec2i pt1, vec2i pt2, vec2i pt3, const Color& color) const {
+    void draw_triangle_2d(vec2i pt1, vec2i pt2, vec2i pt3, float pt1_z, float pt2_z, float pt3_z, const Color& color) {
         //Sort points by height
         if (pt2.y < pt1.y)
         {
             std::swap(pt2, pt1);
+            std::swap(pt2_z, pt1_z);
         }
 
         if (pt3.y < pt1.y)
         {
             std::swap(pt3, pt1);
+            std::swap(pt3_z, pt1_z);
         }
 
         if (pt3.y < pt2.y)
         {
             std::swap(pt2, pt3);
+            std::swap(pt2_z, pt3_z);
         }
         
         //Create interpolations
@@ -293,6 +306,13 @@ private:
             pt3.y, static_cast<float>(pt3.x)
         );
 
+        // Interpolate inverse Z Coord
+        auto inv_z_coords_per_y = interpolate_between_edges(
+            pt1.y, 1.0f/pt1_z,
+            pt2.y, 1.0f/pt2_z,
+            pt3.y, 1.0f/pt3_z
+        );
+
         //working through lists
         for (auto y = pt1.y; y <= pt3.y; ++y)
         {
@@ -300,11 +320,42 @@ private:
 
             auto x_start = static_cast<int>(x_coords_per_y.left[idx_into_lists]);
             auto x_end = static_cast<int>(x_coords_per_y.right[idx_into_lists]);
+
+            auto z_left = inv_z_coords_per_y.left[idx_into_lists];
+            auto z_right = inv_z_coords_per_y.right[idx_into_lists];
             
+            auto zscan = interpolate(
+                x_start, z_left, x_end, z_right
+            );
+
             for(int x = x_start; x <= x_end; ++x){
-                put_pixel({x,y}, color);
+                if(check_and_update_depth_buffer(x, y, zscan[x - x_start])){
+                    put_pixel({x,y}, color);
+                }
             }
         }
+    }
+
+    bool check_and_update_depth_buffer(int x, int y, float inverse_z) {
+        auto w = static_cast<int>(_width);
+        auto h = static_cast<int>(_height);
+
+        // convert x & y to list of values from normalized origin
+        x = w / 2 +x;
+        y = h / 2 -y;
+
+        if(x < 0 || x >= w || y < 0 || y>= h){
+            return false;
+        }
+
+        auto offset = w * y + x;
+
+        if(_depth_buffer[offset] < inverse_z){
+            _depth_buffer[offset] = inverse_z;
+            return true;
+        }
+
+        return false;
     }
 
     void draw_line_3d(const vec3f pt1, const vec3f pt2, const Color& color){

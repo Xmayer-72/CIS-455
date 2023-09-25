@@ -60,7 +60,7 @@ public:
             (static_cast<int>(_height)/2) - pt.y);
     }
 
-    void clear() const
+    virtual void clear()
     {
         SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
         SDL_RenderClear(_renderer);

@@ -31,6 +31,8 @@ int main(){
         
         Canvas.draw_simple_model(cube2);
 
+        Canvas.draw_simple_model(cube3);
+
         Canvas.present();
     }
 
